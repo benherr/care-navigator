@@ -82,9 +82,9 @@ graph TD
 
 ## Assets
 
-![Workflow Diagram](file:///c:/Users/benher/Downloads/adk_workspace/care-navigator/assets/architecture_diagram.png)
+![Workflow Diagram](assets/architecture_diagram.png)
 
-![Cover Page Banner](file:///c:/Users/benher/Downloads/adk_workspace/care-navigator/assets/cover_page_banner.png)
+![Cover Page Banner](assets/cover_page_banner.png)
 
 ## Demo Script
 

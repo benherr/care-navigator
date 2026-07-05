@@ -28,15 +28,15 @@ graph TD
 ## Concepts Used
 
 1. **ADK 2.0 Graph Workflow API**:
-   - Implemented in [app/agent.py](file:///c:/Users/benher/Downloads/adk_workspace/care-navigator/app/agent.py). Orchestrates the flow from input security validation down to the final response and human interaction checkpoint.
+   - Implemented in [app/agent.py](app/agent.py). Orchestrates the flow from input security validation down to the final response and human interaction checkpoint.
 2. **LlmAgent**:
-   - The coordinator (`care_navigator_orchestrator`) and specialized sub-agents (`benefits_eligibility_agent`, `application_guide_agent`) are all defined as separate, modular `LlmAgent` instances in [app/agent.py](file:///c:/Users/benher/Downloads/adk_workspace/care-navigator/app/agent.py).
+   - The coordinator (`care_navigator_orchestrator`) and specialized sub-agents (`benefits_eligibility_agent`, `application_guide_agent`) are all defined as separate, modular `LlmAgent` instances in [app/agent.py](app/agent.py).
 3. **AgentTool**:
-   - Enables the coordinator to delegate tasks dynamically to specialized sub-agents based on the user's inquiry, preserving context and boundaries. Defined in [app/agent.py](file:///c:/Users/benher/Downloads/adk_workspace/care-navigator/app/agent.py#L90-L105).
+   - Enables the coordinator to delegate tasks dynamically to specialized sub-agents based on the user's inquiry, preserving context and boundaries. Defined in [app/agent.py](app/agent.py#L90-L105).
 4. **MCP Server**:
-   - Created in [app/mcp_server.py](file:///c:/Users/benher/Downloads/adk_workspace/care-navigator/app/mcp_server.py) using the MCP Python SDK. Exposes domain-specific calculations, office searches, and program rules.
+   - Created in [app/mcp_server.py](app/mcp_server.py) using the MCP Python SDK. Exposes domain-specific calculations, office searches, and program rules.
 5. **Security Checkpoint Node**:
-   - Implemented as a function node `security_checkpoint` at the graph start in [app/agent.py](file:///c:/Users/benher/Downloads/adk_workspace/care-navigator/app/agent.py#L111-L169) to screen inputs for prompt injection and PII leaks.
+   - Implemented as a function node `security_checkpoint` at the graph start in [app/agent.py](app/agent.py#L111-L169) to screen inputs for prompt injection and PII leaks.
 6. **Agents CLI**:
    - Scaffolded with `agents-cli scaffold create --deployment-target agent_runtime` to set up deployment targets and local virtual environment.
 
@@ -49,7 +49,7 @@ graph TD
 
 ## MCP Server Design
 
-The local MCP server ([app/mcp_server.py](file:///c:/Users/benher/Downloads/adk_workspace/care-navigator/app/mcp_server.py)) exposes 3 specialized tools:
+The local MCP server ([app/mcp_server.py](app/mcp_server.py)) exposes 3 specialized tools:
 1. `lookup_benefit_rules`: Returns specific rules and residency requirements for Medicaid, SNAP, and LIHEAP.
 2. `check_income_threshold`: Compares user household size and gross income against simulated 2026 Federal Poverty Level limits.
 3. `search_local_offices`: Searches a mock directory of physical administration offices and drop-off centers by zip code.
@@ -57,7 +57,7 @@ The local MCP server ([app/mcp_server.py](file:///c:/Users/benher/Downloads/adk_
 ## Human-in-the-Loop (HITL) Flow
 
 A crucial element of social benefit applications is confirming that the applicant has the necessary documentation. 
-- The `hitl_checkpoint` node (implemented in [app/agent.py](file:///c:/Users/benher/Downloads/adk_workspace/care-navigator/app/agent.py#L178-L216)) automatically scans response content for application instructions.
+- The `hitl_checkpoint` node (implemented in [app/agent.py](app/agent.py#L178-L216)) automatically scans response content for application instructions.
 - If it detects that the user is ready to apply, the workflow halts and yields a `RequestInput` payload.
 - The user is asked: *"Please confirm if you have the following documents ready to apply: [Checklist]..."*
 - Once the user replies in the playground, the workflow resumes and processes the confirmation state.
