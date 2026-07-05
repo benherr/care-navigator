@@ -101,10 +101,12 @@ Determine if the user needs to confirm having specific documents (like tax retur
 # Workflow Nodes
 # ==========================================
 
-def security_checkpoint(ctx: Context, node_input: types.Content) -> Event:
+def security_checkpoint(ctx: Context, node_input: Any) -> Event:
     """Security Checkpoint node that filters inputs for PII and prompt injection."""
     user_text = ""
-    if node_input and node_input.parts:
+    if isinstance(node_input, str):
+        user_text = node_input
+    elif hasattr(node_input, "parts") and node_input.parts:
         user_text = "".join(part.text for part in node_input.parts if part.text)
     
     ctx.state["original_query"] = user_text
@@ -168,11 +170,13 @@ def security_event_handler(ctx: Context, node_input: Any) -> Event:
     yield Event(content=types.Content(role='model', parts=[types.Part.from_text(text=msg)]))
     yield Event(output={"error": msg, "status": "blocked"})
 
-async def hitl_checkpoint(ctx: Context, node_input: types.Content) -> AsyncGenerator[Event, None]:
+async def hitl_checkpoint(ctx: Context, node_input: Any) -> AsyncGenerator[Event, None]:
     """Pauses execution to ask the user to confirm documents if required."""
     # Extract text from node_input
     response_text = ""
-    if node_input and node_input.parts:
+    if isinstance(node_input, str):
+        response_text = node_input
+    elif hasattr(node_input, "parts") and node_input.parts:
         response_text = "".join(part.text for part in node_input.parts if part.text)
     
     # Simple heuristics to see if we should request document confirmation
@@ -194,7 +198,10 @@ async def hitl_checkpoint(ctx: Context, node_input: types.Content) -> AsyncGener
 
     # If already confirmed or not required, just yield the response and exit
     if not requires_hitl or ctx.state.get("hitl_status") == "provided":
-        yield Event(content=node_input)
+        if isinstance(node_input, str):
+            yield Event(content=types.Content(role='model', parts=[types.Part.from_text(text=node_input)]))
+        else:
+            yield Event(content=node_input)
         yield Event(output={"response": response_text, "status": "completed"})
         return
         
@@ -208,7 +215,10 @@ async def hitl_checkpoint(ctx: Context, node_input: types.Content) -> AsyncGener
         ctx.state["hitl_status"] = "requested"
         
         # Yield the main agent's text first
-        yield Event(content=node_input)
+        if isinstance(node_input, str):
+            yield Event(content=types.Content(role='model', parts=[types.Part.from_text(text=node_input)]))
+        else:
+            yield Event(content=node_input)
         # Yield the interrupt question
         yield Event(content=types.Content(role='model', parts=[types.Part.from_text(text=f"\n\n{msg}")]))
         yield RequestInput(
@@ -248,6 +258,8 @@ care_navigator_workflow = Workflow(
     ],
     description="Secure workflow guiding users through health and social benefits navigation.",
 )
+
+root_agent = care_navigator_workflow
 
 # App wrapping the workflow
 app = App(
